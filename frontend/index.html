@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Bot Dashboard - Mahlabahlasele 2.0</title>
+    <title>Live Telemetry - Mahlabahlasele 2.0</title>
     <style>
         :root {
             --bg-color: #0b131e;
@@ -127,11 +127,28 @@
             justify-content: space-between;
             align-items: center;
             background: #0b131e;
-            border: 1px solid var(--neon-green);
+            border: 1px solid var(--border-color);
             padding: 12px;
             border-radius: 8px;
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
             margin-bottom: 12px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--neon-red);
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .status-dot.active {
+            background-color: var(--neon-green);
+            box-shadow: 0 0 8px var(--neon-green);
+        }
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--text-main);
+            font-family: monospace;
         }
         .terminal-box {
             background-color: #020617;
@@ -140,86 +157,104 @@
             padding: 10px;
             font-family: monospace;
             font-size: 0.75rem;
-            height: 120px;
+            height: 150px;
             overflow-y: auto;
             color: var(--neon-green);
             white-space: pre-wrap;
         }
+        .mt-4 { margin-top: 16px; }
     </style>
 </head>
 <body>
 
     <header>
         <div>
-            <h1>TRADING BOT DASHBOARD</h1>
+            <h1>MAHLABAHLASELE <span style="font-size: 0.9rem; color: var(--text-dim);">2.0</span></h1>
         </div>
         <div class="header-stats">
-            P&L: <span id="pl-display">+$1,450.25</span> | Active Bots: <span>1</span> | Ex: <span>LOCAL</span>
+            ENGINE: <span id="header-engine-status" style="color: var(--neon-red);">OFFLINE</span>
         </div>
     </header>
 
     <div class="dashboard-grid">
-        <!-- PANEL 1: API SETTINGS -->
+        <!-- PANEL 1: EXCHANGE CREDENTIALS -->
         <div class="panel">
             <div class="panel-title">PANEL 1</div>
-            <div class="panel-heading">API SETTINGS</div>
-            <div class="panel-desc">Connect bot to local server loop. Input target endpoint parameters and verify authorization keys.</div>
+            <div class="panel-heading">EXCHANGE AUTH</div>
+            <div class="panel-desc">Configure your live trading API keys.</div>
             
-            <label>[API Key Name]</label>
-            <input type="text" id="api-name" value="Mahlabahlasele_Key1">
-            
-            <label>[Server Host]</label>
-            <input type="text" id="api-host" value="http://127.0.0.1:8000">
+            <label>API Key Name</label>
+            <input type="text" id="api-name" placeholder="e.g., Binance_Main">
 
-            <button class="btn" onclick="saveSettings()">Save Configuration</button>
+            <label>API Key</label>
+            <input type="password" id="api-key" placeholder="Enter API Key">
+
+            <label>API Secret</label>
+            <input type="password" id="api-secret" placeholder="Enter API Secret">
+
+            <button class="btn" style="background-color: var(--neon-blue); color: white;" onclick="updateConfig()">Save Credentials</button>
         </div>
 
-        <!-- PANEL 2: TRADE CONTROLS -->
+        <!-- PANEL 2: LIVE METRICS -->
         <div class="panel">
             <div class="panel-title">PANEL 2</div>
-            <div class="panel-heading">TRADE CONTROLS</div>
-            <div class="panel-desc">Master Control. Toggles fully automated trading 'ON' or 'OFF'. Disables/Enables all execution logic.</div>
+            <div class="panel-heading">REAL-TIME TELEMETRY</div>
+            <div class="panel-desc">Live state pulled from engine memory.</div>
             
-            <div class="toggle-row">
-              <span style="font-weight: bold; letter-spacing: 1px;">AUTO TRADE</span>
-              <span style="color: var(--neon-green); font-weight: bold;">● ENABLED</span>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                <div style="background: #0b131e; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.75rem; color: var(--text-dim);">Est. PnL</div>
+                    <div id="metric-pnl" class="metric-value">$0.00</div>
+                </div>
+                <div style="background: #0b131e; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.75rem; color: var(--text-dim);">Win Rate</div>
+                    <div id="metric-winrate" class="metric-value">0.0%</div>
+                </div>
             </div>
 
-            <button class="btn btn-danger" onclick="sendAction('/api/stop')">STOP BOT</button>
+            <label>Active Market Signal</label>
+            <div id="metric-signal" style="background: #0b131e; padding: 10px; border-radius: 6px; font-weight: bold; font-family: monospace; margin-bottom: 12px; border: 1px solid var(--border-color);">
+                WAITING FOR DATA...
+            </div>
+
+            <div class="toggle-row">
+                <span>Circuit Breaker Status</span>
+                <span><span id="cb-dot" class="status-dot"></span><span id="cb-text" style="font-weight: bold;">CLOSED</span></span>
+            </div>
         </div>
 
-        <!-- PANEL 3: RISK MANAGEMENT -->
+        <!-- PANEL 3: MASTER CONTROLS -->
         <div class="panel">
             <div class="panel-title">PANEL 3</div>
-            <div class="panel-heading">RISK MANAGEMENT</div>
-            <div class="panel-desc">Defines risk per trade. Input dollar value for 'Lot Size'. Sets max allowable loss ('Drawdown').</div>
+            <div class="panel-heading">EXECUTION CONTROLS</div>
+            <div class="panel-desc">Direct execution commands sent to running server instance.</div>
             
-            <label>Trade Lot Size (USD)</label>
-            <input type="number" value="100.00">
-
-            <label>Max Drawdown %</label>
-            <input type="number" value="15">
-
-            <button class="btn" onclick="alert('Risk parameters updated!')">Update Settings</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                <button class="btn" onclick="sendAction('/api/start')">START ENGINE</button>
+                <button class="btn btn-danger" onclick="sendAction('/api/stop')">STOP ENGINE</button>
+            </div>
+            <button class="btn" style="background-color: #475569; color: white; margin-bottom: 10px;" onclick="sendAction('/api/backtest')">EXECUTE BACKTEST</button>
+            <button class="btn" style="background-color: #3b82f6; color: white;" onclick="sendAction('/api/learn')">TRIGGER RL STEP</button>
         </div>
 
-        <!-- PANEL 4: AI TRADING MODE -->
+        <!-- PANEL 4: STRATEGY WEIGHTS -->
         <div class="panel">
             <div class="panel-title">PANEL 4</div>
-            <div class="panel-heading">AI TRADING MODE</div>
-            <div class="panel-desc">Selects AI execution. 'Active' executes trades based on Q-learning/LLM signals.</div>
+            <div class="panel-heading">REINFORCEMENT WEIGHTS</div>
+            <div class="panel-desc">Current adaptive weights utilized by LearningAgent.</div>
             
-            <button class="btn" style="background-color: #3b82f6; color: #fff; margin-bottom: 10px;" onclick="sendAction('/api/learn')">Run AI Learn Loop</button>
-            <button class="btn" onclick="sendAction('/api/start')">Start Automated Engine</button>
+            <div id="weights-container" style="font-family: monospace; font-size: 0.85rem; background: #0b131e; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); height: 110px; display: flex; flex-direction: column; justify-content: center;">
+                Fetching weights...
+            </div>
         </div>
     </div>
 
-    <!-- PANEL 5: STRATEGY & TERMINAL LOGS -->
-    <div class="panel" style="margin-top: 12px;">
+    <!-- PANEL 5: LIVE TRADE LOG -->
+    <div class="panel mt-4">
         <div class="panel-title">PANEL 5</div>
-        <div class="panel-heading">STRATEGY MANAGER & TELEMETRY</div>
-        <div class="panel-desc">Live log feed streaming directly from FastAPI backend runtime.</div>
-        <div id="terminal" class="terminal-box">[System] Mahlabahlasele 2.0 interface loaded successfully...</div>
+        <div class="panel-heading">LIVE EXECUTION FEED</div>
+        <div class="panel-desc">Real-time event stream from BOT_STATE['trade_log']</div>
+        <div id="terminal" class="terminal-box">Initializing telemetry stream...</div>
     </div>
 
 <script>
@@ -232,16 +267,119 @@
         term.scrollTop = term.scrollHeight;
     }
 
+    async function updateDashboard() {
+        try {
+            const res = await fetch(`${HOST}/status`);
+            if (!res.ok) throw new Error("Server offline");
+            const state = await res.json();
+
+            // Update Header Status
+            const engineStatus = document.getElementById('header-engine-status');
+            if (state.status === "running") {
+                engineStatus.innerText = "RUNNING";
+                engineStatus.style.color = "var(--neon-green)";
+            } else {
+                engineStatus.innerText = "STOPPED";
+                engineStatus.style.color = "var(--neon-red)";
+            }
+
+            // Update Metrics
+            if (state.metrics) {
+                document.getElementById('metric-pnl').innerText = `$${parseFloat(state.metrics.pnl || 0).toFixed(2)}`;
+                document.getElementById('metric-winrate').innerText = `${parseFloat(state.metrics.win_rate || 0).toFixed(1)}%`;
+            }
+
+            // Update Signal
+            if (state.last_signal) {
+                const sig = state.last_signal;
+                document.getElementById('metric-signal').innerHTML = 
+                    `ACTION: <span style="color:${sig.action === 'buy' ? 'var(--neon-green)' : (sig.action === 'sell' ? 'var(--neon-red)' : 'var(--text-dim)')}">${sig.action.toUpperCase()}</span><br>` +
+                    `<span style="font-size: 0.75rem; color: var(--text-dim);">Conf: ${parseFloat(sig.confidence).toFixed(2)} | Reason: ${sig.reason || 'N/A'}</span>`;
+            }
+
+            // Update Circuit Breaker
+            const cbDot = document.getElementById('cb-dot');
+            const cbText = document.getElementById('cb-text');
+            if (state.circuit_breaker && state.circuit_breaker.is_open) {
+                cbDot.className = "status-dot"; // red
+                cbText.innerText = "TRIPPED";
+                cbText.style.color = "var(--neon-red)";
+            } else {
+                cbDot.className = "status-dot active"; // green
+                cbText.innerText = "CLOSED (SAFE)";
+                cbText.style.color = "var(--neon-green)";
+            }
+
+            // Update Weights
+            if (state.reward_weights) {
+                const wContainer = document.getElementById('weights-container');
+                let wHtml = "";
+                for (const [k, v] of Object.entries(state.reward_weights)) {
+                    wHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:4px;">` +
+                             `<span>${k}:</span>` +
+                             `<span style="color:var(--neon-green); font-weight:bold;">${parseFloat(v).toFixed(3)}</span>` +
+                             `</div>`;
+                }
+                wContainer.innerHTML = wHtml;
+            }
+
+            // Update Trade Log
+            if (state.trade_log && state.trade_log.length > 0) {
+                const term = document.getElementById('terminal');
+                let logsText = "=== LIVE TRADE FEED ===";
+                state.trade_log.slice(-10).forEach(logEntry => {
+                    logsText += `\n[${logEntry.time}] PnL: $${parseFloat(logEntry.pnl).toFixed(2)} | Action: ${logEntry.action || 'signal'}`;
+                });
+                term.innerText = logsText;
+            }
+
+        } catch (e) {
+            document.getElementById('header-engine-status').innerText = "DISCONNECTED";
+            document.getElementById('header-engine-status').style.color = "var(--neon-red)";
+            log("Error connecting to backend telemetry endpoint.");
+        }
+    }
+
     async function sendAction(endpoint) {
-        log(`Executing POST -> ${endpoint}`);
+        log(`Triggering -> ${endpoint}`);
         try {
             const res = await fetch(`${HOST}${endpoint}`, { method: 'POST' });
             const data = await res.json();
-            log(`Response: ${JSON.stringify(data)}`);
+            log(`Reply: ${JSON.stringify(data).slice(0, 50)}...`);
+            updateDashboard();
         } catch (e) {
-            log(`Connection error to backend loop.`);
+            log(`Failed to execute ${endpoint}`);
         }
     }
+
+    async function updateConfig() {
+        const apiKey = document.getElementById('api-key').value;
+        const apiSecret = document.getElementById('api-secret').value;
+        const apiName = document.getElementById('api-name').value;
+        
+        log("Saving credentials to backend...");
+        try {
+            const res = await fetch(`${HOST}/api/config`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    api_key: apiKey,
+                    api_secret: apiSecret,
+                    api_name: apiName
+                })
+            });
+            const data = await res.json();
+            log("Credentials updated successfully.");
+        } catch (e) {
+            log("Failed to update credentials.");
+        }
+    }
+
+    // Polling interval for live sync (Every 2 seconds)
+    setInterval(updateDashboard, 2000);
+    
+    // Initial fetch
+    window.onload = updateDashboard;
 </script>
 
 </body>
