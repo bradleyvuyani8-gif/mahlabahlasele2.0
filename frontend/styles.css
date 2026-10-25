@@ -1,1 +1,151 @@
+:root {
+    --bg-primary: #0a0e14;
+    --bg-card: #151b23;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --accent-primary: #238636;
+    --accent-danger: #da3633;
+    --border-color: #30363d;
+    --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    padding: 10px;
+}
+
+#app-container {
+    max-width: 100%;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: var(--bg-card);
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+header h1 {
+    font-size: 1.5rem;
+}
+
+header h1 .version {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+#system-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.status-indicator.online {
+    background-color: var(--accent-primary);
+    box-shadow: 0 0 8px var(--accent-primary);
+}
+
+.status-indicator.offline {
+    background-color: var(--accent-danger);
+}
+
+#control-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.control-btn {
+    padding: 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.control-btn.primary {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+.control-btn.danger {
+    background-color: var(--accent-danger);
+    color: white;
+}
+
+.control-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.metric-card {
+    background-color: var(--bg-card);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.metric-card h3 {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+}
+
+.metric-card p {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+#terminal-section {
+    background-color: var(--bg-card);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+#terminal-section h2 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: var(--text-secondary);
+}
+
+#log-console {
+    background-color: #000;
+    font-family: monospace;
+    font-size: 0.85rem;
+    padding: 10px;
+    height: 200px;
+    overflow-y: auto;
+    border-radius: 4px;
+    color: #00ff00;
+}
 
