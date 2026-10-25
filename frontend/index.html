@@ -1,1 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahlabahlasele 2.0 Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app-container">
+        <header>
+            <h1>Mahlabahlasele <span class="version">2.0</span></h1>
+            <div id="system-status">
+                <span class="status-indicator offline"></span>
+                <span id="status-text">SYSTEM OFFLINE</span>
+            </div>
+        </header>
+
+        <main>
+            <section id="control-panel">
+                <button id="start-btn" class="control-btn primary">Start Engine</button>
+                <button id="stop-btn" class="control-btn danger" disabled>Stop Engine</button>
+            </section>
+
+            <section id="metrics-grid">
+                <div class="metric-card">
+                    <h3>Account Balance</h3>
+                    <p id="account-balance">$0.00</p>
+                </div>
+                <div class="metric-card">
+                    <h3>Market Trend</h3>
+                    <p id="market-trend">Neutral</p>
+                </div>
+                <div class="metric-card">
+                    <h3>RSI Level</h3>
+                    <p id="rsi-value">50.0</p>
+                </div>
+                <div class="metric-card">
+                    <h3>Active Signal</h3>
+                    <p id="active-signal">NONE</p>
+                </div>
+            </section>
+
+            <section id="terminal-section">
+                <h2>Live Telemetry</h2>
+                <div id="log-console"></div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
 
